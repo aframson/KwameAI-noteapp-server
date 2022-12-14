@@ -4,32 +4,61 @@
 const express = require('express');
 const router = new express.Router();
 // const local_connection = require('../../database/mysql')
-const { basicAuth } = require('../middlewares/index')
-const connection = require('../Database/index')
+// const db = require('../Database/index')
+const mongoose = require("mongoose");
+const notes=require('../models/Notes')
+
+//database setting
+mongoose.connect('mongodb+srv://aframson:salvation@cluster0.gvs6c6d.mongodb.net/kwameai',{useNewUrlParser:true}).then(()=>{
+    console.log('connected')
+}).catch(err=>{
+    console.log(err)
+}) 
 
 module.exports = () => {
 
-    router.post('/add',basicAuth, async (req, res) => {
+    router.post('/add', async (req, res) => {
+        try {
+        const {title,body} = req.body
 
-          const {title,body,date,update} = req.body
+        const newNotes = await notes.create({
+            title,
+            body,
+        })
+        res.json(newNotes)
+            
+        } catch (error) {
+            res.json(error)
+        }
 
-           const query = `INSERT INTO notes (title,body,date,dateUpdate) VALUES ('${title}','${body}','${date}','${update}')`
-   
-           connection.query(query, function (error, results) {
-               if (error) {
-                   res.status(404).json({
-                    status:false,
-                    error:error
-                })
-               } else {
-                   res.status(200).json({
-                       status:true,
-                       message: "Data inserted successfully",
-                       data:results
-                   })
-               }
-           });
+            
     });
+
+    router.get('/fetch', async (req, res) => {
+        try {
+        const newNotes = await notes.find()
+
+        res.json(newNotes)
+            
+        } catch (error) {
+            res.json(error)
+        }
+
+    });
+
+//delete posts
+router.delete('/delete/:id',async (req,res)=>{
+    const {id}=req.params
+    try{
+    const post=await notes.findByIdAndDelete(id)
+    res.status(200).json(post)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+})
+
+
+
 
     return router;
 
