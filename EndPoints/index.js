@@ -36,9 +36,10 @@ module.exports = () => {
 
     router.get('/fetch', async (req, res) => {
         try {
-            const newNotes = await notes.find()
+            const newNotes = await notes.find().sort([['updatedAt', 'descending']])
 
             res.json(newNotes)
+            
 
         } catch (error) {
             res.json(error)
